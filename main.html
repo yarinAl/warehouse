@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>רשימת פריטים עם תמונות</title>
+    <style>
+      body {
+        font-family: Arial;
+        max-width: 400px;
+        margin: 20px auto;
+      }
+      .item {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 8px 0;
+        cursor: pointer;
+      }
+      img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>הוסף פריט חדש</h3>
+
+    תיאור:
+    <input
+      id="desc"
+      type="text"
+      style="width: 100%; margin-bottom: 8px"
+    /><br />
+
+    תמונה (צילום):
+    <input
+      id="imageInput"
+      type="file"
+      accept="image/*"
+      capture="environment"
+    /><br /><br />
+
+    <button onclick="addItem()">הוסף</button>
+
+    <hr />
+
+    חיפוש:
+    <input
+      id="search"
+      type="text"
+      style="width: 100%"
+      oninput="renderItems()"
+    />
+
+    <h3>הרשימה</h3>
+    <div id="list"></div>
+
+    <script>
+      // טוען פריטים קיימים מה-localStorage
+      let items = JSON.parse(localStorage.getItem('items') || '[]')
+
+      // הוספת פריט חדש
+      function addItem() {
+        const desc = document.getElementById('desc').value
+        const file = document.getElementById('imageInput').files[0]
+
+        if (!desc || !file) {
+          alert('צריך תיאור ותמונה')
+          return
+        }
+
+        const reader = new FileReader()
+        reader.onload = function (e) {
+          const newItem = {
+            id: Date.now(),
+            desc: desc,
+            img: e.target.result, // Base64
+          }
+
+          items.push(newItem)
+          localStorage.setItem('items', JSON.stringify(items))
+
+          document.getElementById('desc').value = ''
+          document.getElementById('imageInput').value = ''
+
+          renderItems()
+        }
+
+        reader.readAsDataURL(file)
+      }
+
+      // רינדור הרשימה + חיפוש
+      function renderItems() {
+        const search = document.getElementById('search').value.toLowerCase()
+        const list = document.getElementById('list')
+        list.innerHTML = ''
+
+        items
+          .filter((x) => x.desc.toLowerCase().includes(search))
+          .forEach((x) => {
+            const div = document.createElement('div')
+            div.className = 'item'
+            div.innerHTML = `
+                <b>${x.desc}</b><br>
+                <img src="${x.img}">
+            `
+            div.onclick = () => {
+              const w = window.open('')
+              w.document.write(`<img src="${x.img}" style="width:100%;">`)
+            }
+            list.appendChild(div)
+          })
+      }
+
+      renderItems()
+    </script>
+  </body>
+</html>
